@@ -7,6 +7,7 @@ import TextInput from "../../components/TextInput";
 import Button from "../../components/Button";
 import Link from "next/link";
 import { AunthContext } from "@/contexts/AuthContext"; 
+import { toast } from "react-toastify";
 
 export default function SignUp() {
   const { signUp } = useContext(AunthContext);
@@ -21,7 +22,7 @@ export default function SignUp() {
     e.preventDefault();
 
     if(name === '' ||  email === '' ||  password === ''){
-      alert('Todos os campos devem ser preenchidos!')
+      toast.error("Todos os campos deve ser preenchidos!")
       return;
     }
 

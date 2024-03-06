@@ -7,6 +7,8 @@ import TextInput from "@/components/TextInput";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { AunthContext } from "@/contexts/AuthContext";
+import { toast } from "react-toastify";
+import { canSSRGuest } from "@/utils/canSSRGuest";
 
 export default function Home() {
   const { signIn } = useContext(AunthContext);
@@ -22,7 +24,7 @@ export default function Home() {
     event.preventDefault();
 
     if(email ==='' || password === ''){
-      alert("Preencha os campos!")
+      toast.error("Preencha todos os campos!");
       return;
     }
 
@@ -71,3 +73,11 @@ export default function Home() {
     </>
   );
 }
+
+
+export const getServerProps = canSSRGuest(async (ctx) => {
+  
+    return {
+      props: {}
+    }
+})

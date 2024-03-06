@@ -2,6 +2,7 @@ import { createContext, ReactNode, useState } from "react";
 import { api } from "@/services/apiClient";
 import { destroyCookie, setCookie, parseCookies } from "nookies";
 import Router from "next/router";
+import { toast } from "react-toastify";
 
 type AunthContextData = {
   user: UserProps;
@@ -72,8 +73,11 @@ export function AthProvider({ children }: AuthProviderProps) {
       // Passar para todas as proximas requisições que fazer o token
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
+      toast.success("Logado com sucesso!")
+
       Router.push("/dashboard");
     } catch (error) {
+      toast.error("Falha na autenticação, verifique seus dados.");
       console.log("ERRO AO ACESSAR,", error);
     }
   }
@@ -86,9 +90,12 @@ export function AthProvider({ children }: AuthProviderProps) {
         email,
         password
       })
-      alert("CADASTRADO COM SUCESSO!")
+      
+      toast.success("Cadastro realizado com sucesso!");
+
       Router.push('/');
     } catch (err) {
+      toast.error("Erro ao cadastrar! Tente novamente.")
       console.log("ERRO AO CADASTRAR!", err)
     }
   }
