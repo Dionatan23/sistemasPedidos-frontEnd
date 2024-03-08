@@ -4,10 +4,24 @@ import styles from "./product.module.scss";
 import { Header } from "@/components/Header";
 import { FiUpload } from "react-icons/fi";
 import Image from "next/image";
+import { canSSRAuth } from "@/utils/canSSRAuth";
+import { setupApiClient } from "@/services/api";
 
-export default function Product() {
+type ItemProps = {
+  id: string;
+  name: string;
+}
+
+interface CategoryProps {
+  categoryList: ItemProps[]
+}
+
+export default function Product({ categoryList }: CategoryProps) {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [imgAvatar, setImgAvatar] = useState(null);
+
+  const [categories, setCategories] = useState(categoryList);
+  const [categorySelect, setCategorySelect] = useState();
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) {
@@ -24,6 +38,13 @@ export default function Product() {
       setImgAvatar(image);
       setAvatarUrl(URL.createObjectURL(e.target.files[0]));
     }
+  }
+
+  // Função responsavél por selecionar  a categoria de acordo com o index da lista
+  function handleSelectCategory(e) {
+    // console.log("Categoria, posição", e.target.value);
+    // console.log("Categoria selecionada!", categories[e.target.value]);
+    setCategorySelect(e.target.value);
   }
 
   return (
@@ -58,9 +79,15 @@ export default function Product() {
               )}
             </label>
 
-            <select>
-              <option value="">Bebidas</option>
-              <option value="">Pizzas</option>
+            <select value={categorySelect} onChange={handleSelectCategory} >
+              <option>Selecione uma categoria</option>
+                {categories.map((item, index) => {
+                  return (
+                    <option key={item.id} value={index}>
+                      {item.name}
+                    </option>
+                  )
+                })}
             </select>
             <input
               className={styles.input}
@@ -85,3 +112,15 @@ export default function Product() {
     </>
   );
 }
+
+export  const getServerSideProps = canSSRAuth(async (ctx) => {
+  const api = setupApiClient(ctx)
+
+  const  response = await api.get("/category")
+
+  return {
+    props:{
+      categoryList: response.data
+    }
+  }
+})

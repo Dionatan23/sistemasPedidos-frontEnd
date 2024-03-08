@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useState, useEffect } from "react";
 import { api } from "@/services/apiClient";
 import { destroyCookie, setCookie, parseCookies } from "nookies";
 import Router from "next/router";
@@ -9,7 +9,7 @@ type AunthContextData = {
   isAuthenticated: boolean;
   signIn: (credentials: SignInProps) => Promise<void>;
   signOut: () => void;
-  signUp: (credentials: SignUpProps) => Promise<void>
+  signUp: (credentials: SignUpProps) => Promise<void>;
 };
 
 type UserProps = {
@@ -48,6 +48,28 @@ export function AthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserProps>();
   const isAuthenticated = !!user; // !! = Converte  para Booleano, se o  usuário estiver logado vai ser True e False caso contrario.
 
+  useEffect(() => {
+    // Tentar pegar algo no cookie
+    const { "@sistemaPedidos.token": token } = parseCookies();
+
+    if (token) {
+      api.get("/me").then((response) => {
+        const { id, name, email } = response.data;
+
+        setUser({
+          id,
+          name,
+          email,
+        })
+
+      })
+      .catch(() => {
+        // Se deu erro deslogamos o user
+        signOut();
+      })
+    }
+  }, []);
+
   async function signIn({ email, password }: SignInProps) {
     try {
       const response = await api.post("/session", {
@@ -73,7 +95,7 @@ export function AthProvider({ children }: AuthProviderProps) {
       // Passar para todas as proximas requisições que fazer o token
       api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-      toast.success("Logado com sucesso!")
+      toast.success("Logado com sucesso!");
 
       Router.push("/dashboard");
     } catch (error) {
@@ -88,20 +110,22 @@ export function AthProvider({ children }: AuthProviderProps) {
       const response = await api.post("/users", {
         name,
         email,
-        password
-      })
-      
+        password,
+      });
+
       toast.success("Cadastro realizado com sucesso!");
 
-      Router.push('/');
+      Router.push("/");
     } catch (err) {
-      toast.error("Erro ao cadastrar! Tente novamente.")
-      console.log("ERRO AO CADASTRAR!", err)
+      toast.error("Erro ao cadastrar! Tente novamente.");
+      console.log("ERRO AO CADASTRAR!", err);
     }
   }
 
   return (
-    <AunthContext.Provider value={{ user, isAuthenticated, signIn, signOut, signUp }}>
+    <AunthContext.Provider
+      value={{ user, isAuthenticated, signIn, signOut, signUp }}
+    >
       {children}
     </AunthContext.Provider>
   );
