@@ -10,6 +10,7 @@ export function canSSRGuest<p>(fn: GetServerSideProps<p>) {
   return async (
     ctx: GetServerSidePropsContext
   ): Promise<GetServerSidePropsResult<p>> => {
+
     const cookies = parseCookies(ctx);
     const token = cookies["@sistemaPedidos.token"]
 
@@ -19,7 +20,7 @@ export function canSSRGuest<p>(fn: GetServerSideProps<p>) {
       return {
         redirect: {
           destination: "/dashboard",
-          permanent: false
+          permanent: false,
         }
       };
     }
