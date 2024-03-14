@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 import Head from "next/head";
 import styles from "./product.module.scss";
 import { Header } from "@/components/Header";
@@ -6,6 +6,7 @@ import { FiUpload } from "react-icons/fi";
 import Image from "next/image";
 import { canSSRAuth } from "@/utils/canSSRAuth";
 import { setupApiClient } from "@/services/api";
+import { toast } from "react-toastify";
 
 type ItemProps = {
   id: string;
@@ -21,7 +22,11 @@ export default function Product({ categoryList }: CategoryProps) {
   const [imgAvatar, setImgAvatar] = useState(null);
 
   const [categories, setCategories] = useState(categoryList);
-  const [categorySelect, setCategorySelect] = useState();
+  const [categorySelect, setCategorySelect] = useState("");
+
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const  [description, setDescription] = useState("");
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) {
@@ -47,6 +52,39 @@ export default function Product({ categoryList }: CategoryProps) {
     setCategorySelect(e.target.value);
   }
 
+  async function handleRegister(event: FormEvent) {
+    event.preventDefault();
+
+    try {
+      const data = new  FormData();
+      if(name === "" || price === "" || description === ""){
+        toast.warning('Preencha todos os campos');
+        return;
+      }
+
+      data.append("name", name);
+      data.append("price", price);
+      data.append("description", description);
+      data.append("category_id", categories[categorySelect].id);
+      data.append("file", imgAvatar);
+
+      const api = setupApiClient()
+      await api.post("/product", data)
+
+      toast.success("Produto cadastrado com sucesso!");
+
+    } catch (error) {
+      toast.error("Ops! Erro no cadastro do produto!");
+    }
+
+    setName("");
+    setPrice("");
+    setDescription("");
+    setImgAvatar(null);
+    setAvatarUrl("");
+    
+  }
+
   return (
     <>
       <Head>
@@ -56,7 +94,7 @@ export default function Product({ categoryList }: CategoryProps) {
         <Header />
         <main className={styles.container}>
           <h1>Novo produto</h1>
-          <form className={styles.formContent}>
+          <form className={styles.formContent} onSubmit={handleRegister}>
             <label className={styles.labelAvatar}>
               <span>
                 <FiUpload size={25} color="#fff" />
@@ -93,15 +131,21 @@ export default function Product({ categoryList }: CategoryProps) {
               className={styles.input}
               type="text"
               placeholder="Nome do produto"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
             <input
               className={styles.input}
               type="text"
               placeholder="R$  Preço"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
             />
             <textarea
               className={styles.input}
               placeholder="Descrição do produto"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
             <button className={styles.btnAdd} type="submit">
               Cadastrar

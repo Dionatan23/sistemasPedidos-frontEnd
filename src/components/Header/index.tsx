@@ -13,7 +13,7 @@ export function Header() {
   return (
     <header className={styeles.headerContainer}>
       <div className={styeles.headerContent}>
-        <Link href="/dashbord">
+        <Link href="/dashboard">
           <Image className={styeles.logo} src={logo} alt="logo" width={190} height={60} />
         </Link>
 
