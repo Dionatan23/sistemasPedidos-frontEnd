@@ -66,6 +66,25 @@ export default function Dashboard({ orders }: DashProps) {
     console.log("Modal Abriu")
   }
 
+  async function handleFinishPedido(id: string){
+    const api = setupApiClient()
+    await api.put("/finish", {
+      order_id: id
+    })
+
+    const response = await api.get("/orders")
+
+    setOrderList(response.data);
+    setModalView(false);
+  }
+
+  async function handleRefreshOrders() {
+    const api = setupApiClient()
+    const response = await api.get("/orders")
+
+    setOrderList(response.data);
+  }
+
   Modal.setAppElement("#__next");
 
   return (
@@ -80,12 +99,19 @@ export default function Dashboard({ orders }: DashProps) {
             <h1>
               Últimos pedidos!
             </h1>
-            <button>
+            <button onClick={() => handleRefreshOrders()}>
               <FiRefreshCcw size={25} color="#3fffa3" />
             </button>
           </div>
 
           <article className={styles.listOrder}>
+
+            {orderList.length === 0 && (
+              <span className={styles.emptyList}>
+                Nenhum pedido aberto...
+              </span>
+            )}
+            
             {orderList.map( item => (
             <section key={item.id} className={styles.orderItem}>
               <button onClick={() => handleModalView(item.id)}>
@@ -102,6 +128,7 @@ export default function Dashboard({ orders }: DashProps) {
             isOpen={modalView}
             onRequestClose={handleCloseModal}
             order={modalItem}
+            handleFinishOrder={handleFinishPedido}
           />
         )}
       </div>
